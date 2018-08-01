@@ -1,5 +1,5 @@
 typedef enum {
-	INSTR, REGSTR, NUMBER, WSPACE, NEWLINE, ERROR
+	INSTR, IDENT, REGSTR, NUMBER, WSPACE, NEWLINE, ERROR
 } toktype_t;
 
 typedef struct {
@@ -8,4 +8,10 @@ typedef struct {
 	int len;
 	int line;
 } token_t;
+
+extern void tok_print(token_t tok);
+extern toktype_t lookup(char* ident, int len);
+
+extern const int ident_len_max;
+extern const int instr_cnt_max;
 

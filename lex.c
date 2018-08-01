@@ -10,6 +10,7 @@ token_t emit(lexer_t *lexer) {
 		.line   = lexer->line
 	};
 	lexer->src += lexer->ahead;
+	lexer->ahead = 0;
 	return tok;
 }
 

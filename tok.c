@@ -27,6 +27,20 @@ toktype_t lookup(char *ident, int len) {
 	}
 }
 
-void tok_print(token_t tok) {
-	printf("[Line %d] \"%.*s\"\n", tok.line, tok.len, tok.lexeme);
+const char* tok_names(toktype_t type) {
+	switch(type) {
+		case INSTR:   return "INSTR";
+		case IDENT:   return "IDENT";
+		case REGSTR:  return "REGSTR";
+		case NUMBER:  return "NUMBER";
+		case WSPACE:  return "WSPACE";
+		case NEWLINE: return "NEWLINE";
+		case ERROR:   return "ERROR";
+		default:      return "UNKNOWN";
+	}
 }
+
+void tok_print(token_t tok) {
+	printf("[Line %d] %s: \"%.*s\"\n", tok.line, tok_names(tok.type), tok.len, tok.lexeme);
+}
+

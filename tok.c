@@ -3,23 +3,23 @@
 
 #include "tok.h"
 
-#define IDENT_MAX 32
-#define INSTR_MAX 32
-const int ident_len_max = IDENT_MAX;
-const int instr_cnt_max = INSTR_MAX;
-char _lookup[INSTR_MAX][IDENT_MAX];
-#undef IDENT_MAX
-#undef INSTR_MAX
+#define INSTR_LEN_MAX 32
+#define INSTR_CNT_MAX 32
+const int instr_len_max = INSTR_LEN_MAX;
+const int instr_cnt_max = INSTR_CNT_MAX;
+char _lookup[INSTR_CNT_MAX][INSTR_LEN_MAX];
+#undef INSTR_LEN_MAX
+#undef INSTR_CNT_MAX
 
 // assumes _lookup is alphabetically sorted
-toktype_t lookup(char *ident, int len) {
+toktype_t lookup(char *instr, int len) {
 	int cmp, curr = instr_cnt_max / 2;
 	for(int jump = curr / 2; jump > 0; jump /= 2) {
 		if(_lookup[curr] == 0) {
 			curr -= jump;
 			continue;
 		}
-		cmp = strncmp(ident, _lookup[curr], len);
+		cmp = strncmp(instr, _lookup[curr], len);
 		if(cmp == 0) {
 			return INSTR;
 		}
@@ -29,14 +29,12 @@ toktype_t lookup(char *ident, int len) {
 
 const char* tok_names(toktype_t type) {
 	switch(type) {
-		case INSTR:   return "INSTR";
-		case IDENT:   return "IDENT";
-		case REGSTR:  return "REGSTR";
-		case NUMBER:  return "NUMBER";
-		case WSPACE:  return "WSPACE";
-		case NEWLINE: return "NEWLINE";
-		case ERROR:   return "ERROR";
-		default:      return "UNKNOWN";
+		case INSTR:  return "INSTR";
+		case REGSTR: return "REGSTR";
+		case NUMBER: return "NUMBER";
+		case WSPACE: return "WSPACE";
+		case ERROR:  return "ERROR";
+		default:     return "UNKNOWN";
 	}
 }
 

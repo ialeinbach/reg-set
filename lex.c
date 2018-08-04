@@ -76,14 +76,14 @@ int regstr(lexer_t *lexer) {
 }
 
 // lexfn_t
-int ident(lexer_t *lexer) {
+int instr(lexer_t *lexer) {
 	char *ch = lexer->src;
 
 	char curr;
 	for(int c = 0; ; ++c) {
-		if(c >= ident_len_max) {
+		if(c >= instr_len_max) {
 			lexer->type = ERROR;
-			lexer->err = "identfier too long";
+			lexer->err = "instr name too long";
 			return c;
 		}
 		curr = *ch++;
@@ -99,7 +99,7 @@ int ident(lexer_t *lexer) {
 
 token_t next(lexer_t *lexer) {
 	wspace(lexer);
-	if(!regstr(lexer) && !ident(lexer) && !number(lexer)) {
+	if(!regstr(lexer) && !instr(lexer) && !number(lexer)) {
 		if(lexer->type != ERROR) {
 			lexer->type = ERROR;
 			lexer->err = "unexpected character";

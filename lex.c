@@ -1,3 +1,7 @@
+#ifdef TESTING
+#include <stdlib.h>
+#endif
+
 #include <stdio.h>
 
 #include "lex.h"
@@ -103,4 +107,21 @@ token_t next(lexer_t *lexer) {
 	}
 	return emit(lexer);
 }
+
+#ifdef TESTING
+int main(int argc, char *argv[]) {
+	if(argc != 2) {
+		return EXIT_FAILURE;
+	}
+	lexer_t lexer = {
+		.src = argv[1],
+		.ahead = 0,
+		.line = 1
+	};
+	while(lexer.type != ERROR) {
+		tok_print(next(&lexer));
+	}
+	return EXIT_SUCCESS;
+}
+#endif
 

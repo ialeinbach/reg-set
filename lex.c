@@ -68,7 +68,7 @@ int regstr(lexer_t *lexer) {
 		lexer->err = "invalid register name";
 	} else {
 		lexer->type = REGSTR;
-		lexer->ahead += c;
+		lexer->ahead += 1; // account for '@'
 	}
 	--lexer->src;
 

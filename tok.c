@@ -25,6 +25,7 @@ toktype_t lookup(char *instr, int len) {
 		}
 		curr += (cmp > 0) ? jump : -jump;
 	}
+	return ERROR;
 }
 
 const char* tok_names(toktype_t type) {

@@ -89,7 +89,8 @@ int instr(lexer_t *lexer) {
 		curr = *ch++;
 		if(curr != '_' && (curr < 'a' || curr > 'z') && (curr < 'A' || curr > 'Z')) {
 			if(c > 0) {
-				lexer->type = lookup(lexer->src, c);
+				// lexer->type = lookup(lexer->src, c);
+				lexer->type = INSTR;
 				lexer->ahead += c;
 			}
 			return c;

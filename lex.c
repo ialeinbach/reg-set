@@ -101,7 +101,10 @@ int instr(lexer_t *lexer) {
 token_t next(lexer_t *lexer) {
 	wspace(lexer);
 	if(!regstr(lexer) && !instr(lexer) && !number(lexer)) {
-		if(lexer->type != ERROR) {
+		if(*lexer->src == '\0') {
+			lexer->type = ERROR;
+			lexer->err = "EOF encountered";
+		} else if(lexer->type != ERROR) {
 			lexer->type = ERROR;
 			lexer->err = "unexpected character";
 		}

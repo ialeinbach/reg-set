@@ -122,9 +122,12 @@ int main(int argc, char *argv[]) {
 		.ahead = 0,
 		.line = 1
 	};
-	while(lexer.type != ERROR) {
-		tok_print(next(&lexer));
+	token_t tok;
+	while((tok = next(&lexer)).type != ERROR) {
+		printf("  ");
+		tok_print(tok);
 	}
+	printf("STATUS: \"%s\"\n", lexer.err);
 	return EXIT_SUCCESS;
 }
 #endif

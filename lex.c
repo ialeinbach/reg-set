@@ -8,10 +8,10 @@
 
 token_t emit(lexer_t *lexer) {
 	token_t tok = {
-		.type   = lexer->type,
-		.lexeme = lexer->src,
-		.len    = lexer->ahead,
-		.line   = lexer->line
+		.type = lexer->type,
+		.data = lexer->src,
+		.len  = lexer->ahead,
+		.line = lexer->line
 	};
 	lexer->src += lexer->ahead;
 	lexer->ahead = 0;

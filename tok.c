@@ -40,6 +40,6 @@ const char* tok_names(toktype_t type) {
 }
 
 void tok_print(token_t tok) {
-	printf("[Line %d] %s: \"%.*s\"\n", tok.line, tok_names(tok.type), tok.len, tok.lexeme);
+	printf("[Line %d] %s: \"%.*s\"\n", tok.line, tok_names(tok.type), tok.len, tok.data);
 }
 

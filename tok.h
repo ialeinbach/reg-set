@@ -1,17 +1,20 @@
 typedef enum {
-	INSTR, REGSTR, NUMBER, WSPACE, ERROR
+	INSTR,
+	RGSTR,
+	NUMBR,
+	DELIM,
+	ERROR
 } toktype_t;
 
 typedef struct {
 	toktype_t type;
+	int line;
+
+	// lexeme (ptr to src)
 	char *data;
 	int len;
-	int line;
 } token_t;
 
-extern void tok_print(token_t tok);
-extern toktype_t lookup(char *instr, int len);
-
-extern const int instr_len_max;
-extern const int instr_cnt_max;
+extern int sprint_token(char *str, token_t tok);
+extern int sprint_toktype(char *str, toktype_t typ);
 

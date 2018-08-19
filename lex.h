@@ -1,22 +1,10 @@
-#include "tok.h"
-
 typedef struct {
 	char *src;
-	int  ahead;
-
-	toktype_t type;
-	int       line;
-
-	const char *err;
+	token_t tok;
+	int stat;
 } lexer_t;
 
-typedef int (*lexfn_t)(lexer_t *lexer);
+extern int next(token_t *tok, lexer_t *lex);
 
-extern token_t emit(lexer_t *lexer);
-
-extern int regstr(lexer_t *lexer);
-extern int number(lexer_t *lexer);
-extern int wspace(lexer_t *lexer);
-extern int ident(lexer_t *lexer);
-extern token_t next(lexer_t *lexer);
+typedef int (*lexfn_t)(lexer_t *lex);
 

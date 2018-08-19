@@ -1,45 +1,24 @@
-#include <string.h>
 #include <stdio.h>
-
+#include <string.h>
 #include "tok.h"
 
-#define INSTR_LEN_MAX 32
-#define INSTR_CNT_MAX 32
-const int instr_len_max = INSTR_LEN_MAX;
-const int instr_cnt_max = INSTR_CNT_MAX;
-char _lookup[INSTR_CNT_MAX][INSTR_LEN_MAX];
-#undef INSTR_LEN_MAX
-#undef INSTR_CNT_MAX
-
-// assumes _lookup is alphabetically sorted
-toktype_t lookup(char *instr, int len) {
-	int cmp, curr = instr_cnt_max / 2;
-	for(int jump = curr / 2; jump > 0; jump /= 2) {
-		if(_lookup[curr] == 0) {
-			curr -= jump;
-			continue;
-		}
-		cmp = strncmp(instr, _lookup[curr], len);
-		if(cmp == 0) {
-			return INSTR;
-		}
-		curr += (cmp > 0) ? jump : -jump;
-	}
-	return ERROR;
+int sprint_token(char *str, token_t tok) {
+	char *s = str;
+	s += sprintf(s, "[Line %d] ", tok.line);
+	s += sprint_toktype(s, tok.type);
+	s += sprintf(s, " \"%.*s\"", tok.len, tok.data);
+	*s++ = '\0';
+	return s - str;
 }
 
-const char* tok_names(toktype_t type) {
-	switch(type) {
-		case INSTR:  return "INSTR";
-		case REGSTR: return "REGSTR";
-		case NUMBER: return "NUMBER";
-		case WSPACE: return "WSPACE";
-		case ERROR:  return "ERROR";
-		default:     return "UNKNOWN";
+int sprint_toktype(char *str, toktype_t typ) {
+	switch(typ) {
+		case INSTR: strncpy(str, "INSTR", 5); return 5;
+		case RGSTR: strncpy(str, "RGSTR", 5); return 5;
+		case NUMBR: strncpy(str, "NUMBR", 5); return 5;
+		case DELIM: strncpy(str, "DELIM", 5); return 5;
+		case ERROR: strncpy(str, "ERROR", 5); return 5;
+		default:    return 0;
 	}
-}
-
-void tok_print(token_t tok) {
-	printf("[Line %d] %s: \"%.*s\"\n", tok.line, tok_names(tok.type), tok.len, tok.data);
 }
 

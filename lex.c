@@ -4,7 +4,7 @@
 	#include "tok.h"
 #endif
 #include "lex.h"
-#include "err.h"
+#include "stat.h"
 
 #define INSTR_LEN_MAX 3
 

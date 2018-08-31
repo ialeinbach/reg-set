@@ -21,7 +21,7 @@ typedef struct {
 	int argc;
 } stmt_t;
 
-extern const int MAX_ARGC;
+extern const int MAX_ARG_COUNT;
 
 extern insfn_t lookup(char *name, int len);
 extern int next_stmt(lexer_t *lex, stmt_t *stmt);

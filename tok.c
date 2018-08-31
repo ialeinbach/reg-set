@@ -2,6 +2,10 @@
 #include <string.h>
 #include "tok.h"
 
+#ifdef TESTING
+#include <stdlib.h>
+#endif /* TESTING */
+
 int sprint_token(char *str, token_t tok) {
 	char *s = str;
 	s += sprintf(s, "[Line %d] ", tok.line);
@@ -13,7 +17,7 @@ int sprint_token(char *str, token_t tok) {
 
 int sprint_toktype(char *str, toktype_t typ) {
 	switch(typ) {
-		case INSTR: strncpy(str, "INSTR", 5); return 5;
+		case IDENT: strncpy(str, "IDENT", 5); return 5;
 		case RGSTR: strncpy(str, "RGSTR", 5); return 5;
 		case NUMBR: strncpy(str, "NUMBR", 5); return 5;
 		case DELIM: strncpy(str, "DELIM", 5); return 5;
@@ -21,4 +25,11 @@ int sprint_toktype(char *str, toktype_t typ) {
 		default:    return 0;
 	}
 }
+
+#ifdef TESTING
+int main(int argc, char *argv[]) {
+	printf("No tests written.\n");
+	return EXIT_SUCCESS;
+}
+#endif /* TESTING */
 

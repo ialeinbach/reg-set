@@ -1,10 +1,20 @@
+#ifndef _LEX_H
+#define _LEX_H
+
+#include <stdbool.h>
+
+#define MAX_INSTR_LEN 3
+
 typedef struct {
-	char *src;
-	token_t tok;
+	char *text;
+	token_t buf;
 	int stat;
 } lexer_t;
 
-extern int next(token_t *tok, lexer_t *lex);
+typedef bool (*lexfn_t)(lexer_t *lex);
 
-typedef int (*lexfn_t)(lexer_t *lex);
+extern int next_token(lexer_t *lex, token_t *tok);
+extern int check_lexer(lexer_t *lex);
+
+#endif /* _LEX_H */
 

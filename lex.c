@@ -1,124 +1,150 @@
+#include <stdbool.h>
+
 #include <stdio.h>
 #ifdef TESTING
-	#include <stdlib.h>
-	#include "tok.h"
-#endif
+#include <stdlib.h>
+#include <string.h>
+#endif /* TESTING */
+
+#include "tok.h"
 #include "lex.h"
 #include "stat.h"
 
-#define INSTR_LEN_MAX 3
-
-const char RGSTR_PREFIX = '@';
 const int LEX_FN_COUNT = 4;
 
-int is_digit(char ch) {
+int expected(toktype_t type) {
+	switch(type) {
+		case NUMBR: return STAT_EXPECTED_NUMBR;
+		case RGSTR: return STAT_EXPECTED_RGSTR;
+		case IDENT: return STAT_EXPECTED_IDENT;
+		default:
+			return -1;
+	}
+}
+
+bool is_digit(char ch) {
 	return ch >= '0' && ch <= '9';
 }
 
-int is_ident(char ch) {
+bool is_ident(char ch) {
 	return ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch == '_';
 }
 
-int tokenize(lexer_t *lex, toktype_t typ, int len) {
-	lex->tok.data = lex->src;
-	lex->tok.len  = len;
-	lex->tok.type = typ;
-
-	lex->src += len;
-	return len;
-}
-
-// lexfn_t
-int lex_numbr(lexer_t *lex) {
-	char *end = lex->src;
-	if(!is_digit(*end)) {
-		return 0;
-	}
-	while(is_digit(*++end));
-	return tokenize(lex, NUMBR, end - lex->src);
-}
-
-// lexfn_t
-int lex_rgstr(lexer_t *lex) {
-	if(*lex->src != RGSTR_PREFIX) {
-		return 0;
-	}
-	char *start = lex->src++;
-	int c = lex_numbr(lex) + 1;
-	lex->src = start;
-	return tokenize(lex, c > 1 ? RGSTR : ERROR, c);
-}
-
-// lexfn_t
-int lex_instr(lexer_t *lex) {
-	char *end = lex->src;
-	if(!is_ident(*end)) {
-		return 0;
-	}
-	int c = 1;
-	do {
-		if(!is_ident(*++end)) {
-			return tokenize(lex, INSTR, c);
-		}
-	} while(++c <= INSTR_LEN_MAX);
-	lex->stat = STAT_INSTR_TOO_LONG;
-	return tokenize(lex, ERROR, c);
-}
-
-// lexfn_t
-int lex_delim(lexer_t *lex) {
-	return *lex->src == ';' ? tokenize(lex, DELIM, 1) : 0;
-}
-
-// naming?
-lexfn_t* lexfn() {
-	static lexfn_t *fn = NULL;
-	if(fn == NULL) {
-		fn = (lexfn_t*)malloc(sizeof(lexfn_t) * LEX_FN_COUNT);
-		fn[0] = lex_rgstr;
-		fn[1] = lex_instr;
-		fn[2] = lex_numbr;
-		fn[3] = lex_delim;
-	}
-	return fn;
-}
-
-// lexfn_t
-int skip_wspace(lexer_t *lex) {
-	char *start = lex->src;
+int skip_whitespace(lexer_t *lex) {
+	char *start = lex->text;
 	for(;;) {
-		switch(*lex->src) {
+		switch(*lex->text) {
 			case '\n':
-				++lex->tok.line;
+				++lex->buf.line;
 			case '\t':
 			case ' ':
-				++lex->src;
+				++lex->text;
 				continue;
-		default:
-				return lex->src - start;
+			default:
+				return lex->text - start;
 		}
 	}
+}
+
+int check_lexer(lexer_t *lex) {
+	int stat = lex->stat;
+	if(stat != STAT_OK && stat != STAT_DONE) {
+		stat = STAT_LEXER_FAILURE;
+	}
+	return stat;
+}
+
+void tokenize(lexer_t *lex, toktype_t type, int len) {
+	// tokenize into buf
+	lex->buf.data = lex->text;
+	lex->buf.type = type;
+	lex->buf.len  = len;
+
+	// advance lexer
+	lex->text += len;
+}
+
+bool lex_sequence(lexer_t *lex, char prefix, bool (*valid)(char), toktype_t type, int max) {
+	if(*lex->text != prefix) {
+		return false;
+	}
+	char *ch = ++lex->text;
+	if(!valid(*ch)) {
+		--lex->text;
+		lex->stat = expected(type);
+		return true;
+	}
+	int len = 1;
+	if(max == 0) {
+		while(valid(*++ch)) {
+			++len;
+		}
+	} else {
+		while(valid(*++ch) && len < max) {
+			++len;
+		}
+	}
+	tokenize(lex, type, len);
+	return true;
+}
+
+// lexfn_t
+bool lex_numbr(lexer_t *lex) {
+	return lex_sequence(lex, '#', is_digit, NUMBR, 0);
+}
+
+// lexfn_t
+bool lex_rgstr(lexer_t *lex) {
+	return lex_sequence(lex, '@', is_digit, RGSTR, 0);
+}
+
+// lexfn_t
+bool lex_instr(lexer_t *lex) {
+	return lex_sequence(lex, '_', is_ident, IDENT, 0);
+}
+
+// lexfn_t
+bool lex_delim(lexer_t *lex) {
+	bool found = *lex->text == ';';
+	if(found) {
+		tokenize(lex, DELIM, 1);
+	}
+	return found;
+}
+
+lexfn_t *get_lexfn() {
+	// order defines precedence
+	static lexfn_t lexfn[] = {
+		lex_instr,
+		lex_rgstr,
+		lex_numbr,
+		lex_delim
+	};
+	return lexfn;
 }
 
 int next_token(lexer_t *lex, token_t *tok) {
-	char *start = lex->src;
-	skip_wspace(lex);
-	if(*lex->src == '\0') {
+	if(lex->stat != STAT_OK) {
+		return 0;
+	}
+	int len = skip_whitespace(lex);
+	if(*lex->text == '\0') {
 		lex->stat = STAT_DONE;
 		tokenize(lex, DELIM, 0);
-		*tok = lex->tok;
-		return lex->src - start;
+		goto DONE;
 	}
-	int read;
-	lexfn_t *target = lexfn();
+	lexfn_t *lexfn = get_lexfn();
 	for(int i = 0; i < LEX_FN_COUNT; ++i) {
-		if((read = target[i](lex)) > 0) {
-			*tok = lex->tok;
-			return lex->src - start;
+		if((*lexfn++)(lex)) {
+			len += lex->buf.len;
+			goto DONE;
 		}
 	}
 	lex->stat = STAT_UNEXPECTED_CHAR;
-	return lex->src - start;
+	tokenize(lex, ERROR, 1);
+DONE:
+	*tok = lex->buf;
+	return len;
 }
 
 #ifdef TESTING
@@ -127,23 +153,20 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 	lexer_t lex = {
-		.src = argv[1],
-		.tok = (token_t){
-			.line = 1
-		},
-		.stat = 0
+		.text = argv[1],
+		.buf  = (token_t){ .line = 1 },
+		.stat = STAT_OK
 	};
 	token_t tok;
-	char *buf = (char*)malloc(sizeof(char) * 1024);
-	while(lex.stat == 0) {
+	char buf[1024] = { '[', ' ', ']' };
+	while(lex.stat == STAT_OK) {
 		next_token(&lex, &tok);
-		printf("  ");
-		sprint_token(buf, tok);
+		sprintf(buf+3, "%d", lex.stat < 10 ? lex.stat : -1);
+		strncpy(buf+1, buf+3, 1); // single digit or '-'
+		sprint_token(buf+3, tok);
 		printf("%s\n", buf);
 	}
-	printf("STATUS: %d\n", lex.stat);
 	return EXIT_SUCCESS;
 }
 #endif
-#undef RGSTR_PREFIX
 

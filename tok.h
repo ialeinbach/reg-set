@@ -1,5 +1,8 @@
+#ifndef _TOK_H
+#define _TOK_H
+
 typedef enum {
-	INSTR,
+	IDENT,
 	RGSTR,
 	NUMBR,
 	DELIM,
@@ -17,4 +20,6 @@ typedef struct {
 
 extern int sprint_token(char *str, token_t tok);
 extern int sprint_toktype(char *str, toktype_t typ);
+
+#endif /* _TOK_H */
 

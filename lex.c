@@ -1,7 +1,7 @@
 #include <stdbool.h>
 
-#include <stdio.h>
 #ifdef TESTING
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #endif /* TESTING */

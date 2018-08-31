@@ -7,8 +7,8 @@
 #include "reg.h"
 #include "stat.h"
 
-#include <stdio.h>
 #ifdef TESTING
+#include <stdio.h>
 #endif /* TESTING */
 
 const int MAX_ARG_COUNT = 3;

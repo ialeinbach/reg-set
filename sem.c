@@ -108,6 +108,9 @@ DONE:
 }
 
 int next_stmt(lexer_t *lex, stmt_t *stmt) {
+	stmt->instr = NULL;
+	stmt->argc = 0;
+
 	int stat;
 	if((stat = next_instr(lex, stmt)) != STAT_OK) {
 		return stat;

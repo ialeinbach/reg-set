@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <string.h>
-#include "tok.h"
 
 #ifdef TESTING
 #include <stdlib.h>
 #endif /* TESTING */
+
+#include "tok.h"
 
 int sprint_token(char *str, token_t tok) {
 	char *s = str;

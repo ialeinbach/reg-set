@@ -8,15 +8,15 @@
 
 #include "tok.h"
 #include "lex.h"
-#include "stat.h"
+#include "err.h"
 
 const int LEX_FN_COUNT = 4;
 
 int expected(toktype_t type) {
 	switch(type) {
-		case NUMBR: return STAT_EXPECTED_NUMBR;
-		case RGSTR: return STAT_EXPECTED_RGSTR;
-		case IDENT: return STAT_EXPECTED_IDENT;
+		case NUMBR: return ERR_EXPECTED_NUMBR;
+		case RGSTR: return ERR_EXPECTED_RGSTR;
+		case IDENT: return ERR_EXPECTED_IDENT;
 		default:
 			return -1;
 	}
@@ -35,7 +35,7 @@ int skip_whitespace(lexer_t *lex) {
 	for(;;) {
 		switch(*lex->text) {
 			case '\n':
-				++lex->buf.line;
+				++lex->tok.line;
 			case '\t':
 			case ' ':
 				++lex->text;
@@ -46,22 +46,13 @@ int skip_whitespace(lexer_t *lex) {
 	}
 }
 
-int check_lexer(lexer_t *lex) {
-	int stat = lex->stat;
-	if(stat != STAT_OK && stat != STAT_DONE) {
-		stat = STAT_LEXER_FAILURE;
-	}
-	return stat;
-}
 
 void tokenize(lexer_t *lex, toktype_t type, int len) {
-	// tokenize into buf
-	lex->buf.data = lex->text;
-	lex->buf.type = type;
-	lex->buf.len  = len;
-
-	// advance lexer
+	lex->tok.text = lex->text;
+	lex->tok.type = type;
+	lex->tok.len = len;
 	lex->text += len;
+	return;
 }
 
 bool lex_sequence(lexer_t *lex, char prefix, bool (*valid)(char), toktype_t type, int max) {
@@ -71,7 +62,7 @@ bool lex_sequence(lexer_t *lex, char prefix, bool (*valid)(char), toktype_t type
 	char *ch = ++lex->text;
 	if(!valid(*ch)) {
 		--lex->text;
-		lex->stat = expected(type);
+		lex->err = expected(type);
 		return true;
 	}
 	int len = 1;
@@ -88,22 +79,18 @@ bool lex_sequence(lexer_t *lex, char prefix, bool (*valid)(char), toktype_t type
 	return true;
 }
 
-// lexfn_t
 bool lex_numbr(lexer_t *lex) {
 	return lex_sequence(lex, '#', is_digit, NUMBR, 0);
 }
 
-// lexfn_t
 bool lex_rgstr(lexer_t *lex) {
 	return lex_sequence(lex, '@', is_digit, RGSTR, 0);
 }
 
-// lexfn_t
 bool lex_instr(lexer_t *lex) {
-	return lex_sequence(lex, '_', is_ident, IDENT, 0);
+	return lex_sequence(lex, '_', is_ident, IDENT, MAX_INSTR_LEN);
 }
 
-// lexfn_t
 bool lex_delim(lexer_t *lex) {
 	bool found = *lex->text == ';';
 	if(found) {
@@ -113,7 +100,6 @@ bool lex_delim(lexer_t *lex) {
 }
 
 lexfn_t *get_lexfn() {
-	// order defines precedence
 	static lexfn_t lexfn[] = {
 		lex_instr,
 		lex_rgstr,
@@ -123,28 +109,24 @@ lexfn_t *get_lexfn() {
 	return lexfn;
 }
 
-int next_token(lexer_t *lex, token_t *tok) {
-	if(lex->stat != STAT_OK) {
-		return 0;
+bool next_token(lexer_t *lex) {
+	if(lex->done || lex->err != ERR_NONE) {
+		return false;
 	}
-	int len = skip_whitespace(lex);
+	skip_whitespace(lex);
 	if(*lex->text == '\0') {
-		lex->stat = STAT_DONE;
+		lex->done = true;
 		tokenize(lex, DELIM, 0);
-		goto DONE;
+		return true;
 	}
 	lexfn_t *lexfn = get_lexfn();
 	for(int i = 0; i < LEX_FN_COUNT; ++i) {
 		if((*lexfn++)(lex)) {
-			len += lex->buf.len;
-			goto DONE;
+			return lex->err == ERR_NONE;
 		}
 	}
-	lex->stat = STAT_UNEXPECTED_CHAR;
-	tokenize(lex, ERROR, 1);
-DONE:
-	*tok = lex->buf;
-	return len;
+	lex->err = ERR_UNEXPECTED_CHAR;
+	return false;
 }
 
 #ifdef TESTING
@@ -154,19 +136,19 @@ int main(int argc, char *argv[]) {
 	}
 	lexer_t lex = {
 		.text = argv[1],
-		.buf  = (token_t){ .line = 1 },
-		.stat = STAT_OK
+		.tok  = (token_t){ .line = 1 },
+		.err  = ERR_NONE,
+		.done = false
 	};
-	token_t tok;
-	char buf[1024] = { '[', ' ', ']' };
-	while(lex.stat == STAT_OK) {
-		next_token(&lex, &tok);
-		sprintf(buf+3, "%d", lex.stat < 10 ? lex.stat : -1);
-		strncpy(buf+1, buf+3, 1); // single digit or '-'
-		sprint_token(buf+3, tok);
+	char buf[128] = { '[', ' ', ']' };
+	while(!lex.done && lex.err == ERR_NONE && next_token(&lex)) {
+		sprintf(buf + 3, "%d", lex.err < 10 ? lex.err : -1);
+		buf[1] = buf[3];
+		sprint_token(buf + 3, lex.tok);
+		buf[128] = 0;
 		printf("%s\n", buf);
 	}
 	return EXIT_SUCCESS;
 }
-#endif
+#endif /* TESTING */
 

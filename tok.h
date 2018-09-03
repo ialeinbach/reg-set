@@ -5,8 +5,7 @@ typedef enum {
 	IDENT,
 	RGSTR,
 	NUMBR,
-	DELIM,
-	ERROR
+	DELIM
 } toktype_t;
 
 typedef struct {
@@ -14,7 +13,7 @@ typedef struct {
 	int line;
 
 	// lexeme (ptr to src)
-	char *data;
+	char *text;
 	int len;
 } token_t;
 

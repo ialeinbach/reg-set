@@ -1,29 +1,30 @@
 #!/bin/bash
 
-echo ""
-
 ./tidy.sh
 
 echo ""
 
-echo -n "Compiling tok.c ... " && gcc -c -DTESTING tok.c -o test_tok.o && gcc -c tok.c -o tok.o && echo "DONE"
+echo -n "Compiling tok.c ... " && gcc -c tok.c -o tok.o && echo "DONE"
+
 echo -n "Compiling lex.c ... " && gcc -c -DTESTING lex.c -o test_lex.o && gcc -c lex.c -o lex.o && echo "DONE"
-echo -n "Compiling sem.c ... " && gcc -c -DTESTING sem.c -o test_sem.o && gcc -c sem.c -o sem.o && echo "DONE"
+echo -n "Compiling par.c ... " && gcc -c -DTESTING par.c -o test_par.o && gcc -c par.c -o par.o && echo "DONE"
 
 echo ""
 
-echo -n "Building tok ... " && gcc             test_tok.o -o tok && echo "DONE"
-echo -n "Building lex ... " && gcc       test_lex.o tok.o -o lex && echo "DONE"
-echo -n "Building sem ... " && gcc test_sem.o lex.o tok.o -o sem && echo "DONE"
+echo -n "Building lexer tests ... "  && gcc test_lex.o       tok.o -o lex && echo "DONE"
+echo -n "Building parser tests ... " && gcc test_par.o lex.o tok.o -o par && echo "DONE"
+
 echo ""
 
-echo -n "Running lex and sem tests ... "
+echo -n "Running lexer and parser tests ... "
 
 if [ "$#" -eq 0 ]; then
-	echo -n "NONE"
+	echo "NONE"
+	exit 1
+else
+	echo ""
 fi
 
-echo ""
 echo ""
 
 i=0
@@ -40,15 +41,11 @@ for testcase in "$@"; do
 	echo ""
 	echo "Statements"
 	echo "----------"
-	./sem "$testcase"
+	./par "$testcase"
+	echo ""
 	let "i+=1"
 done
 
-if [ "$#" -ne 0 ]; then
-	echo "DONE"
-	echo ""
-fi
-
-./tidy.sh
-
+echo "DONE"
 echo ""
+

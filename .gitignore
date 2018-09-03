@@ -2,4 +2,5 @@ a.out
 *.o
 tok
 lex
+par
 sem

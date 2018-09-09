@@ -126,6 +126,7 @@ bool next_token(lexer_t *lex) {
 		}
 	}
 	lex->err = ERR_UNEXPECTED_CHAR;
+	lex->done = true;
 	return false;
 }
 
@@ -140,15 +141,13 @@ int main(int argc, char *argv[]) {
 		.err  = ERR_NONE,
 		.done = false
 	};
-	char buf[128] = { '[', ' ', ']' };
-	while(!lex.done && lex.err == ERR_NONE && next_token(&lex)) {
-		sprintf(buf + 3, "%d", lex.err < 10 ? lex.err : -1);
-		buf[1] = buf[3];
-		sprint_token(buf + 3, lex.tok);
-		buf[128] = 0;
+	char buf[128];
+	while(next_token(&lex)) {
+		sprint_token(buf, lex.tok);
 		printf("%s\n", buf);
 	}
+	printf("\n");
+	printf("lexer error: %d\n", lex.err);
 	return EXIT_SUCCESS;
 }
 #endif /* TESTING */
-

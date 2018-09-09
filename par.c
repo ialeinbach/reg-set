@@ -14,8 +14,12 @@ bool next_stmt(parser_t *par) {
 	lexer_t *lex = par->lex;
 	statement_t *stmt = &par->stmt;
 	for(;;) {
-		if(lex->done || lex->err != ERR_NONE || !next_token(lex)) {
+		if(lex->done) {
+			return false;
+		}
+		if(lex->err != ERR_NONE || !next_token(lex)) {
 			par->err = ERR_LEXER_FAILURE;
+			lex->done = true;
 			return false;
 		}
 		switch(lex->tok.type) {
@@ -26,6 +30,7 @@ bool next_stmt(parser_t *par) {
 				continue;
 			default:
 				par->err = ERR_EXPECTED_INSTR;
+				lex->done = true;
 				return false;
 		}
 		token_t *argv = stmt->argv;
@@ -39,6 +44,7 @@ bool next_stmt(parser_t *par) {
 					continue;
 				default:
 					par->err = ERR_INVALID_ARG_TYPE;
+					lex->done = true;
 					return false;
 				case DELIM:
 					return true;
@@ -55,35 +61,29 @@ int main(int argc, char *argv[]) {
 	}
 	lexer_t lex = {
 		.text = argv[1],
-		.tok  = (token_t){ .line = 1 },
+		.tok = (token_t){ .line = 1 },
 		.err = ERR_NONE,
 		.done = false
 	};
 	token_t argbuf[MAX_ARG_COUNT];
 	parser_t par = {
-		.lex  = &lex,
+		.lex = &lex,
 		.stmt = (statement_t){ .argv = argbuf },
 		.err = ERR_NONE,
 		.done = false
 	};
 	char buf[128];
-	while(next_stmt(&par) || !lex.done) {
+	while(next_stmt(&par)) {
 		sprint_token(buf, par.stmt.instr);
-		printf("instr: %s\n", buf);
+		printf("INSTR: %s\n", buf);
 		for(int i = 0; i < par.stmt.argc; ++i) {
 			sprint_token(buf, par.stmt.argv[i]);
-			printf("arg %d: %s\n", i, buf);
+			printf("ARG %d: %s\n", i, buf);
 		}
-		if(par.err) {
-			printf("error: %d\n\n", par.err);
-		} else {
-			printf("error: none\n\n");
-		}
-		if(par.lex->done) {
-			break;
-		}
+		printf("\n");
 	}
+	printf("parser error: %d\n", par.err);
+	printf("lexer error: %d\n", lex.err);
 	return EXIT_SUCCESS;
 }
 #endif /* TESTING */
-

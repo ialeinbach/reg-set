@@ -1,23 +1,19 @@
 # reg-set
 
-`reg-set` is a simple register machine designed to aid teaching in the area of
-abstraction and models of computation.
+`reg-set` defines a simple register-based ISA and provides a reference
+interpreter. `reg-set` is intended to be used for education and so makes many
+trade-offs thusly. It is a work in progress.
 
-It is still a work in progress.
+Instructions can be composed into user-defined procedures.  Labels can be
+injected between statements and used as targets for a goto instruction.  This
+pair of features allows for both functional and imperative styles of
+programming.
 
-## Overview
+`_X` where X matches `[a-zA-Z_]+` is an instruction or procedure.
+`#X` where X matches `[0-9]+` is a positive decimal integer literal.
+`@X` where X matches `[0-9]+` is a general-purpose register.
+`$X` where X matches `[0-9]+` is a special-purpose register used for parameter passing.
 
-`reg-set` exposes only very basic operations on 3 registers. It presents a
-simple ISA that is trivial to explain in its entirety.  Moreover, the details of
-the model of computation employed by `reg-set` are designed to be unobtrusive at
-the cost of practicality.
-
-An `.rg` file has the capacity to do only two things. When evaluated by some
-`reg-set` implementation, instructions listed at the top level are enacted in
-top-down order. The only other statements allowed at the top level are procedure
-definitions, which are compositions of instructions that are collectively given
-a name and can be invoked from anywhere.
-
-The three registers are aliased `@0`, `@1`, `@2`. The value stored in `@0` is
-printed upon halting.
-
+`reg-set` source code is structured as many procedure definitions, one of which
+must be called 'main'. The 'main' procedure is used as the entry point for
+program execution.

@@ -27,7 +27,7 @@ bool is_digit(char ch) {
 }
 
 bool is_ident(char ch) {
-	return ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch == '_';
+	return ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z'
 }
 
 int skip_whitespace(lexer_t *lex) {

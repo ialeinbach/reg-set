@@ -9,7 +9,7 @@ injected between statements and used as targets for a goto instruction.  This
 pair of features allows for both functional and imperative styles of
 programming.
 
-`_X` where `X` matches `[a-zA-Z_]+` is an instruction or procedure.</br>
+`_X` where `X` matches `[a-zA-Z]+` is an instruction or procedure.</br>
 `#X` where `X` matches `[0-9]+` is a positive decimal integer literal.</br>
 `@X` where `X` matches `[0-9]+` is a general-purpose register.</br>
 `$X` where `X` matches `[0-9]+` is a special-purpose register used for parameter passing.

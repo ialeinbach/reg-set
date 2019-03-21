@@ -1,3 +1,5 @@
+This project has been put on pause (perhaps indefinitely) and restarted as [imp](https://github.com/ialeinbach/imp).
+
 # reg-set
 
 `reg-set` defines a simple register-based ISA and provides a reference
